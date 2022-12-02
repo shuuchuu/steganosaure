@@ -2,7 +2,10 @@
 authors = [
   {name = "m09", email = "142691+m09@users.noreply.github.com"},
 ]
-dependencies = []
+dependencies = [
+  "deal >= 4, < 5",
+  "numpy >= 2, < 3",
+]
 description = "Basic steganography package using numpy and scikit-image."
 homepage = "https://github.com/shuuchuu/steganosaure"
 license = "Apache-2.0"
@@ -15,6 +18,7 @@ version = "0.1.0"
 [dependency-groups]
 dev = [
   "doit >= 0.37",
+  "hypothesis >= 6, < 7",
   "pytest >= 9",
   "ruff >= 0.17",
   "ty >= 0.0.88",
