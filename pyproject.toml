@@ -16,6 +16,9 @@ readme = "README.md"
 requires-python = ">= 3.13"
 version = "0.1.0"
 
+[project.scripts]
+steganosaure = "steganosaure.cli:main"
+
 [dependency-groups]
 dev = [
   "doit >= 0.37",
