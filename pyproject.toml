@@ -23,6 +23,9 @@ mypy = "^1"
 pylint = "^2"
 pytest = "^7"
 
+[tool.poetry.scripts]
+steganosaure = "steganosaure.cli:main"
+
 [tool.isort]
 profile = "black"
 
