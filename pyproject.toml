@@ -10,6 +10,7 @@ version = "0.1.0"
 deal = "^4"
 numpy = "^1"
 python = "^3.10"
+scikit-image = "^0.21"
 
 [tool.poetry.group.dev.dependencies]
 black = "^23"
