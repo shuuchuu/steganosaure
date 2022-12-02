@@ -5,6 +5,7 @@ authors = [
 dependencies = [
   "deal >= 4, < 5",
   "numpy >= 2, < 3",
+  "scikit-image >= 0.25, < 1",
 ]
 description = "Basic steganography package using numpy and scikit-image."
 homepage = "https://github.com/shuuchuu/steganosaure"
