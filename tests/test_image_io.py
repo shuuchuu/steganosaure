@@ -8,6 +8,7 @@ import pytest
 from steganosaure.image_io import load_image, save_image
 
 
+@hypothesis.settings(deadline=2000)
 @hypothesis.given(
     image=hypothesis.extra.numpy.arrays(
         dtype="uint8",

@@ -34,4 +34,4 @@ def save_image(image: numpy.ndarray, image_path: pathlib.Path) -> None:
             f"Must save image as png: using {png_path} instead of {image_path}",
             file=sys.stderr,
         )
-    skimage.io.imsave(image_path, image, plugin="pil", check_contrast=False)
+    skimage.io.imsave(image_path, image, check_contrast=False)

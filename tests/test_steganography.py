@@ -9,7 +9,8 @@ from steganosaure.steganography import decrypt, encrypt
 @hypothesis.given(
     text=hypothesis.strategies.text(
         hypothesis.strategies.characters(
-            blacklist_categories=("Cs",), blacklist_characters=("\x00")
+            blacklist_categories=["Cs"],
+            blacklist_characters=["\x00"],
         )
     )
 )
