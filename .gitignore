@@ -1,6 +1,8 @@
 __pycache__/
-.hypothesis/
-.mypy_cache/
-.ruff_cache/
+.doit.json
 .pytest_cache/
+.ruff_cache/
 .venv/
+.vscode/
+dist/
+*.egg-info
