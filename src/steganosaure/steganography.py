@@ -17,23 +17,26 @@ from .string_conversion import decode_bits, encode_string
 def encrypt(
     message: str, input_image_path: pathlib.Path, output_image_path: pathlib.Path
 ) -> None:
-    """
-    Encrypt a message in an image.
+    """Encrypt a message in an image.
 
     Args:
         message: Message to be encrypted.
         input_image_path: Image that will be used to hide the message.
         output_image_path: Resulting image where the message will be hidden.
+
+    Raises:
+        ValueError: If the message doesn't fit in the image.
     """
     input_image = load_image(input_image_path)
     print(f"Using an image with {input_image.size} editable values.")
     message_array = encode_string(message)
     print(f"Encrypting a message of {message_array.size} bits.")
     if message_array.size > input_image.size:
-        raise ValueError(
+        msg = (
             "The message is bigger than the number of editable values in the image: "
             f"{message_array.size} > {input_image.size}"
         )
+        raise ValueError(msg)
     flat_image = flatten_array(input_image)
     padded_array = pad_array(message_array, flat_image)
     new_image = modify_least_significant_bits(padded_array, flat_image)
@@ -42,8 +45,7 @@ def encrypt(
 
 
 def decrypt(image_path: pathlib.Path) -> str:
-    """
-    Decrypt a message in an image (at least, try to).
+    """Decrypt a message in an image (at least, try to).
 
     Args:
         image_path: Image to decrypt.

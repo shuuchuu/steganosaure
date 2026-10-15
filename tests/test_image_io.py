@@ -2,6 +2,7 @@ import pathlib
 
 import hypothesis
 import hypothesis.extra.numpy
+import hypothesis.strategies
 import numpy
 import pytest
 

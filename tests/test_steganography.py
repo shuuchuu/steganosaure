@@ -1,6 +1,7 @@
 import pathlib
 
 import hypothesis
+import hypothesis.strategies
 import pytest
 
 from steganosaure.steganography import decrypt, encrypt

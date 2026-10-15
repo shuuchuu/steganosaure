@@ -5,8 +5,7 @@ import numpy
 
 
 def encode_string(string: str) -> numpy.ndarray:
-    """
-    Convert a string (utf8) into a numpy array of bits.
+    """Convert a string (utf8) into a numpy array of bits.
 
     Args:
         string: The string to convert.
@@ -20,8 +19,7 @@ def encode_string(string: str) -> numpy.ndarray:
 
 @deal.raises(UnicodeDecodeError)
 def decode_bits(bits: numpy.ndarray) -> str:
-    """
-    Convert back a  numpy array of bits into a string.
+    """Convert back a  numpy array of bits into a string.
 
     Args:
         bits: Numpy array of dtype uint8 containing only 0s and 1s representing valid

@@ -1,4 +1,5 @@
 import hypothesis
+import hypothesis.strategies
 import numpy
 
 from steganosaure.string_conversion import decode_bits, encode_string

@@ -4,8 +4,7 @@ import numpy
 
 
 def retrieve_least_significant_bits(array: numpy.ndarray) -> numpy.ndarray:
-    """
-    Retrieve the least significant bits of all the elements of a numpy array.
+    """Retrieve the least significant bits of all the elements of a numpy array.
 
     E.g., for the array numpy.array([1, 2, 3]), it should return numpy.array([1, 0, 1]).
     That's because the binary representations of 1, 2 and 3 are 00000001, 00000010 and
@@ -24,8 +23,7 @@ def retrieve_least_significant_bits(array: numpy.ndarray) -> numpy.ndarray:
 def modify_least_significant_bits(
     message: numpy.ndarray, image: numpy.ndarray
 ) -> numpy.ndarray:
-    """
-    Modify the least significant bits of the image array to match the message array.
+    """Modify the least significant bits of the image array to match the message array.
 
     E.g., for the arrays:
 

@@ -8,8 +8,7 @@ import skimage
 
 
 def load_image(image_path: pathlib.Path) -> numpy.ndarray:
-    """
-    Load an image into a numpy array.
+    """Load an image into a numpy array.
 
     Args:
         image_path: Path to the image to load.
@@ -21,8 +20,7 @@ def load_image(image_path: pathlib.Path) -> numpy.ndarray:
 
 
 def save_image(image: numpy.ndarray, image_path: pathlib.Path) -> None:
-    """
-    Save an image.
+    """Save an image.
 
     Args:
         image: Numpy array representing the image to save.

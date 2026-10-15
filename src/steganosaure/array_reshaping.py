@@ -4,8 +4,7 @@ import numpy
 
 
 def flatten_array(array: numpy.ndarray) -> numpy.ndarray:
-    """
-    Flatten the given array so that it has only one dimension.
+    """Flatten the given array so that it has only one dimension.
 
     Args:
         array: Numpy array to flatten.
@@ -17,8 +16,7 @@ def flatten_array(array: numpy.ndarray) -> numpy.ndarray:
 
 
 def reshape_array(flat_array: numpy.ndarray, shape: tuple[int, ...]) -> numpy.ndarray:
-    """
-    Restore the original shape of an array.
+    """Restore the original shape of an array.
 
     Args:
         flat_array: Flat numpy array.
@@ -31,8 +29,7 @@ def reshape_array(flat_array: numpy.ndarray, shape: tuple[int, ...]) -> numpy.nd
 
 
 def pad_array(small_array: numpy.ndarray, big_array: numpy.ndarray) -> numpy.ndarray:
-    """
-    Pad the small array with 0s to match the size of the big array.
+    """Pad the small array with 0s to match the size of the big array.
 
     Args:
         small_array: Numpy array of numbers.
