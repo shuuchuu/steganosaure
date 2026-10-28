@@ -1,73 +1,73 @@
-# Création d'une CLI de stéganographie
+# Creating a Steganography CLI
 
-*[English version](https://github.com/shuuchuu/steganosaure/tree/main-en)*
+*[Version française](https://github.com/shuuchuu/steganosaure/tree/main)*
 
-La [stéganographie](https://fr.wikipedia.org/wiki/St%C3%A9ganographie) regroupe les techniques permettant de dissimuler un message. Elle se distingue de la cryptographie, qui ne cherche pas à cacher un message mais à le rendre incompréhensible pour qui ne possède pas la clé nécessaire.
+[Steganography](https://en.wikipedia.org/wiki/Steganography) encompasses techniques for concealing a message. It differs from cryptography, which aims not to hide a message but to render it incomprehensible to anyone without the necessary key.
 
-La méthode que nous allons implémenter dans ces travaux pratiques est bien connue : elle consiste à [modifier le bit de poids faible de chaque pixel d'une image](https://fr.wikipedia.org/wiki/St%C3%A9ganographie#Usage_des_bits_de_poids_faible_d'une_image). Cette modification n'est pas visible à l'œil nu (même si elle peut être détectée par une analyse statistique).
+The method we will implement in this practical work is well-known: it involves [modifying the least significant bit of each pixel in an image](https://en.wikipedia.org/wiki/Steganography#Digital_messages). This modification is not visible to the naked eye (although it can be detected through statistical analysis).
 
-Ce README est l'énoncé des travaux pratiques, pour les faire dans un Codespace GitHub ou un clone local ; c'est le même que celui du [notebook des travaux pratiques](https://colab.research.google.com/github/shuuchuu/labs/blob/main/cli-hands-on-fr.ipynb). La [branche `solution`](https://github.com/shuuchuu/steganosaure/tree/solution) en donne une solution, que reprend la section *Solution* de chaque étape. Elle utilise aussi [`deal`](https://deal.readthedocs.io/), que l'énoncé ne demande pas : ses contrats (`@deal.raises`) déclarent les exceptions qu'une fonction peut lever (`uv add deal`).
+This README is the lab's statement, to do it in a GitHub Codespace or a local clone; it is the same as the [lab's notebook](https://colab.research.google.com/github/shuuchuu/labs/blob/main/cli-hands-on-en.ipynb). The [`solution-en` branch](https://github.com/shuuchuu/steganosaure/tree/solution-en) gives a solution, which each step's *Solution* section repeats. It also uses [`deal`](https://deal.readthedocs.io/), which the statement doesn't ask for: its contracts (`@deal.raises`) declare the exceptions a function may raise (`uv add deal`).
 
-## Environnement de travail
+## Work Environment
 
-Pour les TPs, nous utiliserons GitHub Codespaces, qui fournit des instances de VSCode dans des conteneurs. La version gratuite des comptes personnels donne 120 heures-cœurs par mois, soit 60 heures sur la machine à 2 cœurs de ce TP, et 15 Go de stockage. C'est largement suffisant pour ces travaux pratiques.
+For the labs, we will use GitHub Codespaces, which provides VSCode instances within containers. The free plan of personal accounts gives 120 core hours per month, that is 60 hours on this lab's 2-core machine, and 15 GB of storage. This is more than sufficient for this practical work.
 
-Si vous n'avez pas de compte GitHub, commencez par en créer un [ici](https://github.com/signup).
+If you do not have a GitHub account, start by creating one [here](https://github.com/signup).
 
-Ouvrez le dépôt dans un Codespace : [ce lien](https://codespaces.new/shuuchuu/steganosaure), ou, sur GitHub, **Code** > **Codespaces** > **Create codespace on main**. Dans un clone local, installez [uv](https://docs.astral.sh/uv/getting-started/installation/), puis lancez `uv sync` à la racine du dépôt.
+Open the repository in a Codespace: [this link](https://codespaces.new/shuuchuu/steganosaure/tree/main-en), or, on GitHub, **Code** > **Codespaces** > **Create codespace on main-en**. In a local clone, install [uv](https://docs.astral.sh/uv/getting-started/installation/), then run `uv sync` at the root of the repository.
 
-[![Ouvrir dans GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/shuuchuu/steganosaure)
+[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/shuuchuu/steganosaure/tree/main-en)
 
-Le dépôt du TP est un projet `uv` : le code va dans `src/steganosaure/` et les tests dans `tests/`. Il ne déclare encore aucune dépendance : dans le terminal du Codespace, `uv add numpy scikit-image` ajoute celles dont ce TP a besoin.
+The labs repository is a `uv` project: the code goes in `src/steganosaure/` and the tests in `tests/`. It does not declare any dependency yet: in the Codespace's terminal, `uv add numpy scikit-image` adds those this lab needs.
 
-Les tests se lancent depuis ce terminal avec `uv run pytest` (`pytest` est déjà dans les dépendances de développement du dépôt). Le fichier `tests/conftest.py` fournit deux fixtures pytest, `museum_image_path` et `size_image_path`, les chemins des images de `tests/images/` dont l'étape 2 a besoin : un test les reçoit en les nommant parmi ses paramètres.
+Run the tests from this terminal with `uv run pytest` (`pytest` is already among the repository's development dependencies). The `tests/conftest.py` file provides two pytest fixtures, `museum_image_path` and `size_image_path`, the paths of the images in `tests/images/` that step 2 needs: a test receives them by naming them among its parameters.
 
-## Étape 1 ⋅ Fonctions de conversion de chaînes de caractères en bits et inversement
+## Step 1 ⋅ Functions for Converting Strings to Bits and Vice Versa
 
-Dans un premier temps, nous allons nous concentrer sur la conversion de chaînes de caractères en bits (et inversement).
+First, we will focus on converting strings into bits (and vice versa).
 
-Une première fonction, `encode_string`, prendra en argument une chaîne de caractères et renverra un tableau numpy des bits correspondants (dans l'encodage utf8).
+A first function, `encode_string`, will take a string as an argument and return a numpy array of the corresponding bits (in utf8 encoding).
 
-Un tableau numpy est une structure de données homogène (éléments de même type), que nous utiliserons dans ces travaux pratiques comme une liste très améliorée.
+A numpy array is a homogeneous data structure (elements of the same type), which we will use in this practical work as a highly enhanced list.
 
-Par exemple, pour la chaîne `"ABC"`, on attend le tableau de sortie suivant :
+For example, for the string `"ABC"`, we expect the following output array:
 
 ```python
 numpy.array([0, 1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1, 1])
 ```
 
-En effet, `A` s'encode `01000001` en utf8, `B` `01000010` et `C` `01000011`. Le tableau attendu est simplement la concaténation de ces bits.
+Indeed, `A` is encoded as `01000001` in utf8, `B` as `01000010`, and `C` as `01000011`. The expected array is simply these bits concatenated.
 
-Pour coder cette fonction, voici quelques fonctions utiles :
-- [`str.encode`](https://docs.python.org/fr/3/library/stdtypes.html#str.encode), qui renvoie un objet `bytes` (lui-même un itérable d'octets représentés par des entiers)
-- [`numpy.unpackbits`](https://numpy.org/doc/stable/reference/generated/numpy.unpackbits.html), que vous pouvez appliquer à un tableau numpy créé au préalable à partir des octets représentés par des entiers obtenus depuis l'objet `bytes`. Pour créer le tableau numpy, vous pouvez utiliser [`numpy.array`](https://numpy.org/doc/stable/reference/generated/numpy.array.html) ou [`numpy.fromiter`](https://numpy.org/doc/stable/reference/generated/numpy.fromiter.html) en précisant `dtype="uint8"` lors de l'appel. Cet argument vous permettra de représenter les valeurs des octets avec le type le plus adapté.
+To code this function, here are some useful functions:
+- [`str.encode`](https://docs.python.org/3/library/stdtypes.html#str.encode) which returns a `bytes` object (itself an iterable of bytes represented as integers)
+- [`numpy.unpackbits`](https://numpy.org/doc/stable/reference/generated/numpy.unpackbits.html), which you can apply to a numpy array previously created from the bytes represented as integers obtained from the `bytes` object. To create the numpy array, you can use [`numpy.array`](https://numpy.org/doc/stable/reference/generated/numpy.array.html) or [`numpy.fromiter`](https://numpy.org/doc/stable/reference/generated/numpy.fromiter.html) and specify `dtype="uint8"` during the call. This argument will allow you to represent the byte values with the most suitable type.
 
-Voici la signature attendue de la fonction :
+Here is the expected function signature:
 
 ```python
 def encode_string(string: str) -> numpy.ndarray: ...
 ```
 
-La fonction `decode_bits` se chargera de la transformation inverse. Les fonctions à utiliser sont les inverses de celles nécessaires pour `encode_string` :
-- [`bytes.decode`](https://docs.python.org/fr/3/library/stdtypes.html#bytes.decode), qui renvoie une chaîne de caractères
+The `decode_bits` function will handle the reverse transformation. The functions to use are the inverses of those needed for `encode_string`:
+- [`bytes.decode`](https://docs.python.org/3/library/stdtypes.html#bytes.decode) which returns a string
 - [`numpy.packbits`](https://numpy.org/doc/stable/reference/generated/numpy.packbits.html)
 
-Voici la signature attendue de la fonction :
+Here is the expected function signature:
 
 ```python
 def decode_bits(bits: numpy.ndarray) -> str: ...
 ```
 
-Consignes :
+Instructions:
 
-- Créez le fichier `tests/test_string_conversion.py` et écrivez au moins un cas de test par fonction, en utilisant l'exemple donné si besoin. Pour comparer deux tableaux numpy, vous pouvez utiliser la fonction dédiée [`numpy.testing.assert_array_equal`](https://numpy.org/doc/stable/reference/generated/numpy.testing.assert_array_equal.html).
-- Créez le fichier `src/steganosaure/string_conversion.py` et implémentez-y ces deux fonctions pour que les tests passent.
-- Pouvez-vous concevoir un test qui s'assure que les deux fonctions sont bien inverses l'une de l'autre ? Avec [`hypothesis`](https://hypothesis.readthedocs.io/) (`uv add --dev hypothesis`), il peut porter sur des chaînes générées : `@hypothesis.given(hypothesis.strategies.text())`.
+- Create the file `tests/test_string_conversion.py` and create at least one test case per function, using the given example if necessary. To compare two numpy arrays, you can use the dedicated function [`numpy.testing.assert_array_equal`](https://numpy.org/doc/stable/reference/generated/numpy.testing.assert_array_equal.html).
+- Create the file `src/steganosaure/string_conversion.py` and implement these two functions inside so that the tests pass.
+- Can you design a test that ensures the two functions are indeed inverses of each other? With [`hypothesis`](https://hypothesis.readthedocs.io/) (`uv add --dev hypothesis`), it can run on generated strings: `@hypothesis.given(hypothesis.strategies.text())`.
 
 <details>
 <summary>Solution</summary>
 
-`tests/test_string_conversion.py` :
+`tests/test_string_conversion.py`:
 
 ```python
 import hypothesis
@@ -112,7 +112,7 @@ def test_encode_decode(text: str) -> None:
     assert text == decode_bits(encode_string(text))
 ```
 
-`src/steganosaure/string_conversion.py` :
+`src/steganosaure/string_conversion.py`:
 
 ```python
 """String to bits conversion (and vice versa) utilities."""
@@ -148,37 +148,37 @@ def decode_bits(bits: numpy.ndarray) -> str:
     return bytes(numpy.packbits(bits)).decode("utf8").rstrip("\x00")
 ```
 
-`decode_bits` retire déjà les caractères nuls de l'étape 5 : les chaînes générées les excluent.
+`decode_bits` already removes step 5's null characters: the generated strings exclude them.
 
 </details>
 
-## Étape 2 ⋅ Fonctions de chargement et de sauvegarde d'images
+## Step 2 ⋅ Functions for Loading and Saving Images
 
-Nous allons maintenant coder deux fonctions importantes : l'une chargera une image, l'autre la sauvegardera.
+Now we are going to code two important functions: one will load an image, and the other will save it.
 
-**Attention, pour que notre algorithme fonctionne, une image sauvegardée puis rechargée doit être identique à l'image d'origine.**
+**Note, for our algorithm to work, an image saved and then reloaded must be identical to the original image.**
 
-La fonction de chargement devra charger une image dans un tableau numpy dont les éléments sont des entiers 8 bits (pour cela, vous pouvez utiliser le paquet [`scikit-image`](https://scikit-image.org/), et en particulier les fonctions [`skimage.io.imread`](https://scikit-image.org/docs/stable/api/skimage.io.html#skimage.io.imread) et [`skimage.util.img_as_ubyte`](https://scikit-image.org/docs/stable/api/skimage.util.html#skimage.util.img_as_ubyte)). Voici la signature attendue :
+The loading function will need to load an image into a numpy array with elements as 8-bit integers (for this, you can use the [`scikit-image`](https://scikit-image.org/) package and specifically the functions [`skimage.io.imread`](https://scikit-image.org/docs/stable/api/skimage.io.html#skimage.io.imread) and [`skimage.util.img_as_ubyte`](https://scikit-image.org/docs/stable/api/skimage.util.html#skimage.util.img_as_ubyte)). Here is the expected signature:
 
 ```python
 def load_image(image_path: pathlib.Path) -> numpy.ndarray: ...
 ```
 
-La fonction de sauvegarde devra sauvegarder un tableau numpy au chemin indiqué. Notez que pour que l'image rechargée soit équivalente à l'image sauvegardée tout en gardant une bonne qualité, il est préférable de sauvegarder les images au format `.png`. Vous pouvez utiliser la fonction [`skimage.io.imsave`](https://scikit-image.org/docs/stable/api/skimage.io.html#skimage.io.imsave). Il sera utile de lui passer l'argument `check_contrast=False`. Voici la signature attendue :
+The saving function will need to save a numpy array to the specified path. Note that to ensure the reloaded image is equivalent to the saved image while maintaining good quality, it is preferable to save images in `.png` format. You can use the function [`skimage.io.imsave`](https://scikit-image.org/docs/stable/api/skimage.io.html#skimage.io.imsave). It will be useful to pass it the argument `check_contrast=False`. Here is the expected signature:
 
 ```python
 def save_image(image: numpy.ndarray, image_path: pathlib.Path) -> None: ...
 ```
 
-Consignes :
+Instructions:
 
-- Créez le fichier `tests/test_image_io.py` et écrivez au moins un cas de test qui s'assure que le point crucial est respecté (une image sauvegardée puis chargée est identique à l'image d'origine).
-- Créez le fichier `src/steganosaure/image_io.py` et implémentez-y ces deux fonctions pour que le ou les tests passent.
+- Create the file `tests/test_image_io.py` and create at least one test case to ensure that the crucial point is respected (an image saved and then loaded is the same as the original image).
+- Create the file `src/steganosaure/image_io.py` and implement these two functions inside so that the test(s) pass.
 
 <details>
 <summary>Solution</summary>
 
-`tests/test_image_io.py` :
+`tests/test_image_io.py`:
 
 ```python
 import pathlib
@@ -227,7 +227,7 @@ def test_load_save_load(
     numpy.testing.assert_array_equal(image, saved_and_loaded)
 ```
 
-`src/steganosaure/image_io.py` :
+`src/steganosaure/image_io.py`:
 
 ```python
 """Image loading and saving utilities."""
@@ -269,20 +269,20 @@ def save_image(image: numpy.ndarray, image_path: pathlib.Path) -> None:
 
 </details>
 
-## Étape 3 ⋅ Fonctions de manipulation de bits
+## Step 3 ⋅ Bit Manipulation Functions
 
-Nous allons maintenant implémenter le cœur de l'algorithme : modifier le bit de poids faible de chaque pixel pour y stocker un bit d'information de la chaîne à cacher.
+We will now implement the core of the algorithm: modifying the least significant bit of each pixel to store a bit of information from the string to be hidden.
 
-Petit rappel sur la manipulation de bits :
+A brief reminder on bit manipulation:
 
 ```python
-0b01 & 0b11 == 0b01  # ET bit à bit : le bit résultat vaut 1 si les deux bits valent 1
-0b01 | 0b11 == 0b11  # OU bit à bit : le bit résultat vaut 1 si au moins un bit vaut 1
-0b11 >> 1 == 0b01  # décalage à droite, complète avec des 0
-0b11 << 1 == 0b110  # décalage à gauche, complète avec des 0
+0b01 & 0b11 == 0b01  # bitwise AND, result bit is 1 if both bits are 1
+0b01 | 0b11 == 0b11  # bitwise OR, result bit is 1 if at least one bit is 1
+0b11 >> 1 == 0b01  # right shift, fills with 0s
+0b11 << 1 == 0b110  # left shift, fills with 0s
 ```
 
-Ces représentations sont équivalentes à leur notation décimale :
+These representations are equivalent to their decimal notation:
 
 ```python
 1 & 3 == 1
@@ -291,9 +291,9 @@ Ces représentations sont équivalentes à leur notation décimale :
 3 << 1 == 6
 ```
 
-Pour cela, nous allons implémenter deux fonctions. La première, `retrieve_least_significant_bits`, renverra un tableau numpy de même taille que son argument mais ne contenant que des 0 ou des 1 : les bits de poids faible des nombres contenus dans le tableau en argument.
+To achieve this, we will implement two functions. The first one, `retrieve_least_significant_bits`, will return a numpy array of the same size as its argument but containing only 0s or 1s: the least significant bits of the numbers contained in the argument array.
 
-Pour écrire cette fonction, n'hésitez pas à tirer parti du fait qu'on peut appliquer directement une opération à un tableau numpy (y compris les opérations bit à bit) :
+To write this function, feel free to utilize the fact that you can directly apply an operation on a numpy array (including bitwise operations):
 
 ```pycon
 >>> 3 & 1
@@ -304,13 +304,13 @@ Pour écrire cette fonction, n'hésitez pas à tirer parti du fait qu'on peut ap
 array([1, 0])
 ```
 
-Voici sa signature attendue :
+Here is its expected signature:
 
 ```python
 def retrieve_least_significant_bits(array: numpy.ndarray) -> numpy.ndarray: ...
 ```
 
-La seconde fonction à implémenter, `modify_least_significant_bits`, modifiera les bits de poids faible de `image` pour qu'ils correspondent au tableau `message`. Voici sa signature attendue :
+The second function to implement, `modify_least_significant_bits`, will modify the least significant bits of the `image` so that they match the `message` array. Here is its expected signature:
 
 ```python
 def modify_least_significant_bits(
@@ -318,15 +318,15 @@ def modify_least_significant_bits(
 ) -> numpy.ndarray: ...
 ```
 
-Consignes :
+Instructions:
 
-- Créez le fichier `tests/test_bits_manipulation.py` et écrivez au moins un cas de test par fonction.
-- Créez le fichier `src/steganosaure/bits_manipulation.py` et implémentez-y ces deux fonctions pour que les tests passent.
+- Create the file `tests/test_bits_manipulation.py` and create at least one test case for each function.
+- Create the file `src/steganosaure/bits_manipulation.py` and implement these two functions inside so that the tests pass.
 
 <details>
 <summary>Solution</summary>
 
-`tests/test_bits_manipulation.py` :
+`tests/test_bits_manipulation.py`:
 
 ```python
 """Bits manipulation utilities."""
@@ -352,7 +352,7 @@ def test_modify_least_significant_bits() -> None:
     )
 ```
 
-`src/steganosaure/bits_manipulation.py` :
+`src/steganosaure/bits_manipulation.py`:
 
 ```python
 """Bits manipulation utilities."""
@@ -405,13 +405,13 @@ def modify_least_significant_bits(
 
 </details>
 
-## Étape 4 ⋅ Fonctions de manipulation de tableaux numpy
+## Step 4 ⋅ Functions to Manipulate numpy Arrays
 
-La fonction suivante, `pad_array`, prépare les arguments de `modify_least_significant_bits` pour qu'ils aient la même taille. Elle renvoie `small_array` (qui sera notre message à cacher) complété avec des zéros jusqu'à la taille de `big_array` (qui sera l'image dans laquelle le message est dissimulé). Vous pouvez utiliser [`numpy.pad`](https://numpy.org/doc/stable/reference/generated/numpy.pad.html) pour l'implémentation.
+The next function, `pad_array`, preprocesses the arguments of `modify_least_significant_bits` so that they are of the same size. It returns `small_array` (which will be our message to hide) padded with zeros up to the size of `big_array` (which will be the image where the message is concealed). You can use [`numpy.pad`](https://numpy.org/doc/stable/reference/generated/numpy.pad.html) for the implementation.
 
-Si `small_array` est plus grand que `big_array`, le message ne tient pas dans l'image : `pad_array` doit alors lever une `ValueError` dont le message donne les deux tailles.
+If `small_array` is bigger than `big_array`, the message does not fit in the image: `pad_array` must then raise a `ValueError` whose message gives both sizes.
 
-Voici sa signature attendue :
+Here is its expected signature:
 
 ```python
 def pad_array(
@@ -419,15 +419,15 @@ def pad_array(
 ) -> numpy.ndarray: ...
 ```
 
-Consignes :
+Instructions:
 
-- Créez le fichier `tests/test_array_reshaping.py` et écrivez au moins un cas de test pour le complément par des zéros, et un qui vérifie la `ValueError` avec [`pytest.raises`](https://docs.pytest.org/en/stable/how-to/assert.html#assertions-about-expected-exceptions).
-- Créez le fichier `src/steganosaure/array_reshaping.py` et implémentez-y cette fonction pour que les tests passent.
+- Create the file `tests/test_array_reshaping.py` and write at least one test case for the zero padding, and one that checks the `ValueError` with [`pytest.raises`](https://docs.pytest.org/en/stable/how-to/assert.html#assertions-about-expected-exceptions).
+- Create the file `src/steganosaure/array_reshaping.py` and implement this function inside so that the tests pass.
 
 <details>
 <summary>Solution</summary>
 
-`tests/test_array_reshaping.py` :
+`tests/test_array_reshaping.py`:
 
 ```python
 import numpy
@@ -448,7 +448,7 @@ def test_pad_array_too_big() -> None:
         pad_array(numpy.arange(10), numpy.array([1, 1, 0]))
 ```
 
-`src/steganosaure/array_reshaping.py` :
+`src/steganosaure/array_reshaping.py`:
 
 ```python
 """Array reshaping utilities."""
@@ -484,13 +484,13 @@ def pad_array(small_array: numpy.ndarray, big_array: numpy.ndarray) -> numpy.nda
 
 </details>
 
-## Étape 5 ⋅ Implémentation de la stéganographie
+## Step 5 ⋅ Implementation of Steganography
 
-Nous avons maintenant terminé la phase préparatoire et disposons de toutes les fonctions nécessaires pour implémenter la stéganographie.
+We have now completed the preparatory phase and have all the necessary functions to implement steganography.
 
-La première fonction de notre outil, `encrypt`, permettra à l'utilisateur de cacher un message dans une image. Avant d'appliquer les méthodes déjà développées, il faudra utiliser [`numpy.reshape`](https://numpy.org/doc/stable/reference/generated/numpy.reshape.html) pour obtenir toutes les valeurs de pixels dans un tableau à une dimension, puis pour rendre à l'image modifiée sa forme d'origine. Vous pouvez ranger ces deux opérations dans `array_reshaping.py` (`flatten_array`, `reshape_array`).
+The first function of our tool, `encrypt`, will allow the user to hide a message within an image. Before applying the already developed methods, it will be necessary to use [`numpy.reshape`](https://numpy.org/doc/stable/reference/generated/numpy.reshape.html) to obtain all pixel values in a one-dimensional array, then to give the modified image its original shape back. You can put these two operations in `array_reshaping.py` (`flatten_array`, `reshape_array`).
 
-Voici sa signature attendue :
+Here is its expected signature:
 
 ```python
 def encrypt(
@@ -498,23 +498,23 @@ def encrypt(
 ) -> None: ...
 ```
 
-La seconde fonction de notre outil, `decrypt`, permettra à l'utilisateur de retrouver le message précédemment caché dans une image. Voici sa signature attendue :
+The second function of our tool, `decrypt`, will allow the user to retrieve the previously hidden message from an image. Here is its expected signature:
 
 ```python
 def decrypt(image_path: pathlib.Path) -> str: ...
 ```
 
-L'image contient le message suivi des zéros ajoutés par `pad_array` : décodés, ils donnent des caractères nuls (`"\x00"`) en fin de chaîne. Retirez-les (`str.rstrip("\x00")`), dans `decrypt` ou dans `decode_bits` ; dans le second cas, excluez ce caractère des chaînes générées à l'étape 1 : `hypothesis.strategies.text(hypothesis.strategies.characters(exclude_categories=["Cs"], exclude_characters="\x00"))`. Les substituts (catégorie `Cs`), que `text()` exclut de lui-même, ne s'encodent pas en utf8 : un `characters` sans `exclude_categories` les génère.
+The image holds the message followed by the zeros `pad_array` added: decoded, they give null characters (`"\x00"`) at the end of the string. Remove them (`str.rstrip("\x00")`), in `decrypt` or in `decode_bits`; in the latter case, exclude this character from the strings generated in step 1: `hypothesis.strategies.text(hypothesis.strategies.characters(exclude_categories=["Cs"], exclude_characters="\x00"))`. Surrogates (category `Cs`), which `text()` excludes on its own, don't encode to utf8: a `characters` without `exclude_categories` generates them.
 
-Consignes :
+Instructions:
 
-- Créez le fichier `tests/test_steganography.py` et écrivez au moins un cas de test qui vérifie le bon fonctionnement des deux fonctions ensemble.
-- Créez le fichier `src/steganosaure/steganography.py` et implémentez-y ces deux fonctions pour que les tests passent.
+- Create the file `tests/test_steganography.py` and write at least one test case to verify the correct functioning of both functions together.
+- Create the file `src/steganosaure/steganography.py` and implement these two functions inside to ensure the tests pass.
 
 <details>
 <summary>Solution</summary>
 
-`src/steganosaure/array_reshaping.py`, après les imports :
+`src/steganosaure/array_reshaping.py`, after the imports:
 
 ```python
 def flatten_array(array: numpy.ndarray) -> numpy.ndarray:
@@ -542,7 +542,7 @@ def reshape_array(flat_array: numpy.ndarray, shape: tuple[int, ...]) -> numpy.nd
     return flat_array.reshape(shape)
 ```
 
-`tests/test_steganography.py` :
+`tests/test_steganography.py`:
 
 ```python
 import pathlib
@@ -573,7 +573,7 @@ def test_encrypt_decrypt_museum(
     assert text == decrypted
 ```
 
-`src/steganosaure/steganography.py` :
+`src/steganosaure/steganography.py`:
 
 ```python
 """Top-level functions of the steganosaure tool to encrypt and decrypt messages."""
@@ -630,38 +630,38 @@ def decrypt(image_path: pathlib.Path) -> str:
 
 </details>
 
-## Étape 6 ⋅ La commande `steganosaure`
+## Step 6 ⋅ The `steganosaure` Command
 
-Il reste à faire de `encrypt` et `decrypt` un outil en ligne de commande, `steganosaure`, à deux sous-commandes :
+What remains is to turn `encrypt` and `decrypt` into a command line tool, `steganosaure`, with two subcommands:
 
-- `encrypt`, avec les arguments `message`, `input_image_path` et `output_image_path` ;
-- `decrypt`, avec l'argument `image_path` ; elle affiche le message trouvé.
+- `encrypt`, with the arguments `message`, `input_image_path` and `output_image_path`;
+- `decrypt`, with the argument `image_path`; it prints the message it finds.
 
-Consignes :
+Instructions:
 
-- Créez le fichier `src/steganosaure/cli.py`. Écrivez-y une fonction `create_parser`, qui construit et renvoie le parser avec `argparse` (bibliothèque standard), et une fonction `main`, sans argument, qui l'utilise et appelle `encrypt` ou `decrypt`.
-- Déclarez dans `pyproject.toml` la commande `steganosaure`, qui appelle la fonction `main` du module `steganosaure.cli`, puis lancez `uv sync` dans le terminal du Codespace pour l'installer.
-- Créez le fichier `tests/test_cli.py` et testez le parser : `create_parser().parse_args(["decrypt", "cache.png"])` doit donner la commande `decrypt` et le chemin `cache.png`.
-- Essayez la commande dans le terminal du Codespace : `encrypt` crée l'image `/tmp/cache.png`, puis `decrypt` y retrouve le message.
+- Create the file `src/steganosaure/cli.py`. Write in it a `create_parser` function, which builds and returns the parser with `argparse` (standard library), and a `main` function, without arguments, which uses it and calls `encrypt` or `decrypt`.
+- Declare in `pyproject.toml` the `steganosaure` command, which calls the `main` function of the `steganosaure.cli` module, then run `uv sync` in the Codespace's terminal to install it.
+- Create the file `tests/test_cli.py` and test the parser: `create_parser().parse_args(["decrypt", "hidden.png"])` must give the `decrypt` command and the `hidden.png` path.
+- Try the command in the Codespace's terminal: `encrypt` creates the image `/tmp/hidden.png`, then `decrypt` finds the message in it.
 
 ```console
-$ uv run steganosaure encrypt "Bonjour" tests/images/museum.jpg /tmp/cache.png
-$ uv run steganosaure decrypt /tmp/cache.png
-Bonjour
+$ uv run steganosaure encrypt "Hello" tests/images/museum.jpg /tmp/hidden.png
+$ uv run steganosaure decrypt /tmp/hidden.png
+Hello
 ```
 
-Pour aller plus loin, réécrivez l'interface avec `Typer` (`uv add typer`, une fonction par commande) et testez-la avec `typer.testing.CliRunner`.
+To go further, rewrite the interface with `Typer` (`uv add typer`, one function per command) and test it with `typer.testing.CliRunner`.
 
-Documentation utile :
+Useful documentation:
 
-- [`argparse` : sous-commandes](https://docs.python.org/fr/3/library/argparse.html#subcommands)
-- [Déclarer une commande : `[project.scripts]`](https://packaging.python.org/en/latest/guides/writing-pyproject-toml/#creating-executable-scripts)
-- [`Typer` : plusieurs commandes](https://typer.tiangolo.com/tutorial/commands/), [tests](https://typer.tiangolo.com/tutorial/testing/)
+- [`argparse`: sub-commands](https://docs.python.org/3/library/argparse.html#subcommands)
+- [Declaring a command: `[project.scripts]`](https://packaging.python.org/en/latest/guides/writing-pyproject-toml/#creating-executable-scripts)
+- [`Typer`: multiple commands](https://typer.tiangolo.com/tutorial/commands/), [testing](https://typer.tiangolo.com/tutorial/testing/)
 
 <details>
 <summary>Solution</summary>
 
-`src/steganosaure/cli.py` :
+`src/steganosaure/cli.py`:
 
 ```python
 """Steganosaure command line interface."""
@@ -701,14 +701,14 @@ def main() -> None:
         print(decrypt(args.image_path))
 ```
 
-`pyproject.toml` :
+`pyproject.toml`:
 
 ```toml
 [project.scripts]
 steganosaure = "steganosaure.cli:main"
 ```
 
-`tests/test_cli.py` :
+`tests/test_cli.py`:
 
 ```python
 import pathlib
@@ -732,6 +732,6 @@ def test_parse_encrypt() -> None:
 
 </details>
 
-## Crédits des images
+## Image credits
 
-Voir [`tests/images/README.md`](tests/images/README.md).
+See [`tests/images/README.md`](tests/images/README.md).
