@@ -11,7 +11,7 @@ def task_check():
         "actions": [
             "uv run ruff check src/steganosaure tests",
             "uv run ruff format --check src/steganosaure tests",
-            "uv run ty check src/steganosaure tests",
+            "uv run pyrefly check src/steganosaure tests",
         ],
     }
 
