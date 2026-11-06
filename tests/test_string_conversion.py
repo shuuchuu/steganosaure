@@ -2,20 +2,20 @@ import hypothesis
 import hypothesis.strategies
 import numpy
 
-from steganosaure.conversion_chaines import decode_bits, encode_chaine
+from steganosaure.string_conversion import decode_bits, encode_string
 
 
-def test_encode_chaine_vide() -> None:
-    numpy.testing.assert_array_equal(encode_chaine(""), numpy.array([], dtype="uint8"))
+def test_encode_empty_string() -> None:
+    numpy.testing.assert_array_equal(encode_string(""), numpy.array([], dtype="uint8"))
 
 
-def test_decode_bits_vides() -> None:
+def test_decode_empty_bits() -> None:
     numpy.testing.assert_array_equal("", decode_bits(numpy.array([], dtype="uint8")))
 
 
-def test_encode_chaine() -> None:
+def test_encode_string() -> None:
     numpy.testing.assert_array_equal(
-        encode_chaine("AB"),
+        encode_string("AB"),
         numpy.array([0, 1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 1, 0], dtype="uint8"),
     )
 
@@ -36,5 +36,5 @@ def test_decode_bits() -> None:
         )
     )
 )
-def test_encode_decode(texte: str) -> None:
-    assert texte == decode_bits(encode_chaine(texte))
+def test_encode_decode(text: str) -> None:
+    assert text == decode_bits(encode_string(text))
