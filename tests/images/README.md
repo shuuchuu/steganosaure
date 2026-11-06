@@ -1,9 +1,9 @@
-# Image sources and licenses
+# Sources et licences des images
 
-## size.png
+## taille.png
 
-License: CC-BY-SA-3.0, [Source](https://commons.wikimedia.org/wiki/File:Stegosaurus_size.png).
+Licence : CC-BY-SA-3.0, [source](https://commons.wikimedia.org/wiki/File:Stegosaurus_size.png).
 
-## museum.jpg
+## musee.jpg
 
-License: CC-BY-SA-3.0, [Source](https://commons.wikimedia.org/wiki/File:Stegosaurus_at_the_Field_Museum.jpg).
+Licence : CC-BY-SA-3.0, [source](https://commons.wikimedia.org/wiki/File:Stegosaurus_at_the_Field_Museum.jpg).
