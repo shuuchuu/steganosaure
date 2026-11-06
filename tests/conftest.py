@@ -4,15 +4,15 @@ import pytest
 
 
 @pytest.fixture(scope="session")
-def dossier_images() -> pathlib.Path:
+def images_dir() -> pathlib.Path:
     return pathlib.Path(__file__).parent / "images"
 
 
 @pytest.fixture(scope="session")
-def chemin_image_musee(dossier_images: pathlib.Path) -> pathlib.Path:
-    return dossier_images / "musee.jpg"
+def museum_image_path(images_dir: pathlib.Path) -> pathlib.Path:
+    return images_dir / "museum.jpg"
 
 
 @pytest.fixture(scope="session")
-def chemin_image_taille(dossier_images: pathlib.Path) -> pathlib.Path:
-    return dossier_images / "taille.png"
+def size_image_path(images_dir: pathlib.Path) -> pathlib.Path:
+    return images_dir / "size.png"
