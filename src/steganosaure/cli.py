@@ -1,39 +1,35 @@
-"""Interface en ligne de commande de steganosaure."""
+"""Steganosaure command line interface."""
 
 from argparse import ArgumentParser
 from pathlib import Path
 
-from .steganographie import chiffre, dechiffre
+from .steganography import decrypt, encrypt
 
 
-def cree_parseur() -> ArgumentParser:
-    """Construit le parseur de la commande steganosaure et de ses deux sous-commandes.
+def create_parser() -> ArgumentParser:
+    """Build the parser of the steganosaure command and its two subcommands.
 
     Returns:
-        Le parseur.
+        The parser.
     """
-    parseur = ArgumentParser(
-        prog="steganosaure", description="Cache des messages dans des images"
-    )
-    sous_parseurs = parseur.add_subparsers(
-        help="Commandes", dest="commande", required=True
-    )
+    parser = ArgumentParser(prog="steganosaure", description="Hide messages in images")
+    subparsers = parser.add_subparsers(help="Commands", dest="command", required=True)
 
-    parseur_chiffre = sous_parseurs.add_parser("chiffre")
-    parseur_chiffre.add_argument("message")
-    parseur_chiffre.add_argument("chemin_image_entree", type=Path)
-    parseur_chiffre.add_argument("chemin_image_sortie", type=Path)
+    parser_encode = subparsers.add_parser("encrypt")
+    parser_encode.add_argument("message")
+    parser_encode.add_argument("input_image_path", type=Path)
+    parser_encode.add_argument("output_image_path", type=Path)
 
-    parseur_dechiffre = sous_parseurs.add_parser("dechiffre")
-    parseur_dechiffre.add_argument("chemin_image", type=Path)
-    return parseur
+    parser_decode = subparsers.add_parser("decrypt")
+    parser_decode.add_argument("image_path", type=Path)
+    return parser
 
 
 def main() -> None:
-    """Point d'entrée du programme."""
-    parseur = cree_parseur()
-    args = parseur.parse_args()
-    if args.commande == "chiffre":
-        chiffre(args.message, args.chemin_image_entree, args.chemin_image_sortie)
+    """Entrypoint of the program."""
+    parser = create_parser()
+    args = parser.parse_args()
+    if args.command == "encrypt":
+        encrypt(args.message, args.input_image_path, args.output_image_path)
     else:
-        print(dechiffre(args.chemin_image))
+        print(decrypt(args.image_path))
