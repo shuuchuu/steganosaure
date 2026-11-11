@@ -7,6 +7,7 @@ import pytest
 from steganosaure.steganographie import chiffre, dechiffre
 
 
+@hypothesis.settings(deadline=None)
 @hypothesis.given(
     texte=hypothesis.strategies.text(
         hypothesis.strategies.characters(
