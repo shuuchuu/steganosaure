@@ -4,13 +4,15 @@ authors = [
 ]
 dependencies = []
 description = "Basic steganography package using numpy and scikit-image."
-homepage = "https://github.com/shuuchuu/steganosaure"
 license = "Apache-2.0"
 license-files = ["LICENSE"]
 name = "steganosaure"
 readme = "README.md"
 requires-python = ">= 3.13"
 version = "0.1.0"
+
+[project.urls]
+Homepage = "https://github.com/shuuchuu/steganosaure"
 
 [dependency-groups]
 dev = [
