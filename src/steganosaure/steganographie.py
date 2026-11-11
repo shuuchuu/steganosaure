@@ -6,7 +6,10 @@ import deal
 
 from .conversion_chaines import decode_bits, encode_chaine
 from .images import charge_image, sauvegarde_image
-from .manipulation_bits import extrait_bits_poids_faible, modifie_bits_poids_faible
+from .manipulation_bits import (
+    extrait_bits_poids_faible,
+    modifie_bits_poids_faible,
+)
 from .manipulation_tableaux import aplatit_tableau, complete_tableau, reforme_tableau
 
 
