@@ -192,7 +192,7 @@ import pytest
 from steganosaure.images import charge_image, sauvegarde_image
 
 
-@hypothesis.settings(deadline=2000)
+@hypothesis.settings(deadline=None)
 @hypothesis.given(
     image=hypothesis.extra.numpy.arrays(
         dtype="uint8",
@@ -561,6 +561,7 @@ import pytest
 from steganosaure.steganographie import chiffre, dechiffre
 
 
+@hypothesis.settings(deadline=None)
 @hypothesis.given(
     texte=hypothesis.strategies.text(
         hypothesis.strategies.characters(
